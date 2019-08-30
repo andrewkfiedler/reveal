@@ -4,6 +4,7 @@ import { withKnobs, text, select } from '@connexta/ace/@storybook/addon-knobs'
 import { action } from '@connexta/ace/@storybook/addon-actions'
 
 import InputBase from '@material-ui/core/InputBase'
+import Input from '@material-ui/core/Input'
 import CreateTwoToneIcon from '@material-ui/icons/CreateTwoTone'
 import InputAdornment from '@material-ui/core/InputAdornment'
 import TextField from '@material-ui/core/TextField'
@@ -91,21 +92,19 @@ const SearchStuff = props => {
 
   return (
     <CardContent>
-      <FormControl fullWidth>
-        <TextField
-          label="Text"
-          variant="outlined"
-          fullWidth
-          value={filterTree.value}
-          onChange={e => {
-            const value = e.target.value
-            setFilterTree({ ...filterTree, value })
-          }}
-        />
-        <FormLabel value="fusam" labelPlacement="start">
-          Match Case
-        </FormLabel>
-        <Switch color="primary" edge="start" />
+      <TextField
+        label="Text"
+        variant="outlined"
+        fullWidth
+        value={filterTree.value}
+        onChange={e => {
+          const value = e.target.value
+          setFilterTree({ ...filterTree, value })
+        }}
+      />
+      <FormControl fullWidth margin={'dense'}>
+        <FormLabel value="fusam">Match Case</FormLabel>
+        <FormControlLabel control={<Switch color="primary" />} />
 
         <FormLabel>Located</FormLabel>
         <RadioGroup row>
@@ -153,7 +152,7 @@ const SearchStuff = props => {
   )
 }
 
-const BasicSearch = props => {
+export const BasicSearch = props => {
   return (
     <div style={{ maxWidth: 600, margin: '20px auto' }}>
       <Card>
