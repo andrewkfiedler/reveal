@@ -2,8 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 
 import Button from '@material-ui/core/Button'
-import Card from '@material-ui/core/Card'
-import CardContent from '@material-ui/core/CardContent'
+import Paper from '@material-ui/core/Paper'
 import TextField from '@material-ui/core/TextField'
 
 import { executeQuery } from './intrigue-api/lib/cache'
@@ -16,7 +15,7 @@ const TextSearch = props => {
   })
 
   return (
-    <CardContent>
+    <React.Fragment>
       <TextField
         label="Text"
         variant="outlined"
@@ -36,7 +35,7 @@ const TextSearch = props => {
       >
         Search
       </Button>
-    </CardContent>
+    </React.Fragment>
   )
 }
 
@@ -60,15 +59,13 @@ const populateDefaultQuery = filterTree => ({
 
 export const BasicSearch = props => {
   return (
-    <div style={{ maxWidth: 600, margin: '20px auto' }}>
-      <Card>
+      <Paper style={{ maxWidth: 600, margin: '20px auto' }}>
         <TextSearch
           onSearch={filterTree => {
             props.onSearch(populateDefaultQuery(filterTree))
           }}
         />
-      </Card>
-    </div>
+      </Paper>
   )
 }
 
