@@ -32,9 +32,7 @@ const TextSearch = props => {
         fullWidth
         variant="contained"
         color="primary"
-        onClick={() => {
-          props.onSearch(filterTree)
-        }}
+        onClick={() => props.onSearch(filterTree)}
       >
         Search
       </Button>
@@ -42,9 +40,9 @@ const TextSearch = props => {
   )
 }
 
-const populateDefaultFilterTree = filterTree => ({
+const populateDefaultQuery = filterTree => ({
   // hello source to test error case
-  srcs: ['ddf.distribution', 'cache', 'hello'],
+  srcs: ['ddf.distribution', 'cache'],
   start: 1,
   count: 250,
   filterTree,
@@ -66,7 +64,7 @@ export const BasicSearch = props => {
       <Card>
         <TextSearch
           onSearch={filterTree => {
-            props.onSearch(populateDefaultFilterTree(filterTree))
+            props.onSearch(populateDefaultQuery(filterTree))
           }}
         />
       </Card>
