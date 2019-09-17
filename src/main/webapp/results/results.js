@@ -185,7 +185,7 @@ const Results = props => {
 }
 
 const mapStateToProps = state => ({
-  selected: getSelected(state),
+  selection: getSelected(state),
 })
 
 const mapDispatchToProps = {

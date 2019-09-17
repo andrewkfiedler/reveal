@@ -1,4 +1,3 @@
-import { combineReducers } from 'redux'
 import { Set } from 'immutable'
 
 const ns = 'ddf.results.reducer'
@@ -27,15 +26,6 @@ const selection = (state = Set(), action) => {
   }
 }
 
-const thumbnail = (state = {}, action) => {
-  switch (action.type) {
-    default:
-      return state
-  }
-}
-
 export const getSelected = state => getLocalState(state).selection
 
-export default {
-  [ns]: combineReducers({ selection, thumbnail }),
-}
+export default { [ns]: selection }
