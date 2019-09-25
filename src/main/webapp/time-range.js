@@ -5,6 +5,7 @@ import React from 'react'
 
 import Checkbox from '@material-ui/core/Checkbox'
 import FormControl from '@material-ui/core/FormControl'
+import FormHelperText from '@material-ui/core/FormHelperText'
 import Input from '@material-ui/core/Input'
 import InputLabel from '@material-ui/core/InputLabel'
 import ListItemText from '@material-ui/core/ListItemText'
@@ -30,19 +31,13 @@ const timeProperties = [
   'modified',
 ]
 
-const uglyMap = {
-  minutes: howMany => `RELATIVE(PT${howMany}M)`,
-  hours: howMany => `RELATIVE(PT${howMany}H)`,
-  days: howMany => `RELATIVE(P${howMany}D)`,
-  months: howMany => `RELATIVE(P${howMany}M)`,
-  years: howMany => `RELATIVE(P${howMany}Y)`,
-}
+const relativeUnits = ['minutes', 'hours', 'days', 'months', 'years']
 
-const getDate = date => {
+const getDate = (date, defaultDate = new Date()) => {
   const dateCheck = new Date(date)
 
   if (isNaN(dateCheck.valueOf())) {
-    return new Date()
+    return defaultDate
   }
 
   return dateCheck
@@ -69,10 +64,13 @@ const defaultRange = range => {
   }
 
   if (type === '=') {
-    const value = uglyMap.days(1)
+    const last = range.last || ''
+    const unit = range.unit || 'days'
+
     return {
       type,
-      value,
+      last,
+      unit,
     }
   }
 
@@ -90,6 +88,7 @@ const TimeRange = props => {
       props.setTimeRange(range)
     }
   }
+  const { errors = {} } = props
 
   const TimeRangeWhen = getTimeRangeWhen(timeRange.type)
 
@@ -99,6 +98,7 @@ const TimeRange = props => {
         <FormControl fullWidth>
           <InputLabel>Time Range</InputLabel>
           <Select
+            error={errors.type}
             value={timeRange.type || ''}
             onChange={e => {
               setTimeRange({ ...timeRange, type: e.target.value })
@@ -109,6 +109,7 @@ const TimeRange = props => {
             <MenuItem value={'DURING'}>Between</MenuItem>
             <MenuItem value={'='}>Relative</MenuItem>
           </Select>
+          <FormHelperText error={errors.type}>{errors.type}</FormHelperText>
         </FormControl>
       </div>
 
@@ -116,18 +117,20 @@ const TimeRange = props => {
         type={timeRange.type}
         timeRange={timeRange}
         setTimeRange={setTimeRange}
+        errors={errors}
       />
     </div>
   )
 }
 
 const createTimeRange = label => props => {
-  const { timeRange = {}, setTimeRange } = props
+  const { timeRange = {}, setTimeRange, errors = {} } = props
 
   return (
     <DatePicker
       label={label}
       defaultDate={getDate(timeRange.value)}
+      error={errors.value}
       setDate={date => {
         setTimeRange({
           type: timeRange.type,
@@ -142,12 +145,13 @@ const TimeRangeAfter = createTimeRange('Limit search to after this time')
 const TimeRangeBefore = createTimeRange('Limit search to before this time')
 
 const TimeRangeDuring = props => {
-  const { timeRange = {}, setTimeRange } = props
+  const { timeRange = {}, setTimeRange, errors = {} } = props
 
   return (
     <div style={{ display: 'flex', alignItems: 'center' }}>
       <DatePicker
         label="From"
+        error={errors.from}
         defaultDate={getDate(timeRange.from)}
         setDate={date => {
           const value = `${date}/${timeRange.to}`
@@ -157,6 +161,7 @@ const TimeRangeDuring = props => {
       <div style={{ width: 20 }} />
       <DatePicker
         label="To"
+        error={errors.to}
         defaultDate={getDate(timeRange.to)}
         setDate={date => {
           timeRange.to = date
@@ -169,39 +174,40 @@ const TimeRangeDuring = props => {
 }
 
 const TimeRangeRelative = props => {
-  const [unit, setUnit] = React.useState('days')
-  const [last, setLast] = React.useState(1)
-  const { timeRange = {}, setTimeRange } = props
+  const { timeRange = {}, setTimeRange, errors = {} } = props
 
   return (
     <div style={{ overflow: 'auto', flex: '1', paddingTop: 10 }}>
       <div style={{ display: 'flex' }}>
-        <TextField
-          label="Last"
-          variant="outlined"
-          fullWidth
-          value={last}
-          onChange={e => {
-            setLast(e.target.value)
-            const tr = {
-              type: timeRange.type,
-              value: uglyMap[unit](e.target.value),
-            }
-            setTimeRange(tr)
-          }}
-        />
+        <div>
+          <TextField
+            label="Last"
+            error={errors.last}
+            variant="outlined"
+            fullWidth
+            value={timeRange.last}
+            onChange={e => {
+              setTimeRange({
+                type: timeRange.type,
+                last: e.target.value,
+                unit: timeRange.unit,
+              })
+            }}
+          />
+          <FormHelperText error={errors.last}>{errors.last}</FormHelperText>
+        </div>
         <div style={{ width: 20 }} />
         <FormControl fullWidth>
           <InputLabel>Unit</InputLabel>
           <Select
-            value={unit}
+            value={timeRange.unit}
+            error={errors.unit}
             onChange={e => {
-              setUnit(e.target.value)
-              const tr = {
+              setTimeRange({
                 type: timeRange.type,
-                value: uglyMap[e.target.value](last),
-              }
-              setTimeRange(tr)
+                last: timeRange.last,
+                unit: e.target.value,
+              })
             }}
           >
             <MenuItem value={`minutes`}>Minutes</MenuItem>
@@ -217,32 +223,33 @@ const TimeRangeRelative = props => {
 }
 
 const DatePicker = props => {
-  const { setDate, label, defaultDate } = props
-  console.log('defaultDate', defaultDate)
+  const { setDate, label, defaultDate, error } = props
   const [selectedDate, setSelectedDate] = React.useState(defaultDate)
 
-  function handleDateChange(date) {
-    setSelectedDate(date)
-    setDate(date)
-  }
-
   return (
-    <MuiPickersUtilsProvider utils={DateFnsUtils}>
-      <KeyboardDatePicker
-        fullWidth
-        disableToolbar
-        variant="inline"
-        format="MM/dd/yyyy"
-        margin="normal"
-        id="date-picker-inline"
-        label={label}
-        value={selectedDate}
-        onChange={handleDateChange}
-        KeyboardButtonProps={{
-          'aria-label': 'change date',
-        }}
-      />
-    </MuiPickersUtilsProvider>
+    <div>
+      <MuiPickersUtilsProvider utils={DateFnsUtils}>
+        <KeyboardDatePicker
+          error={error}
+          fullWidth
+          disableToolbar
+          variant="inline"
+          format="MM/dd/yyyy"
+          margin="normal"
+          id="date-picker-inline"
+          label={label}
+          value={selectedDate}
+          onChange={date => {
+            setSelectedDate(date)
+            setDate(date)
+          }}
+          KeyboardButtonProps={{
+            'aria-label': 'change date',
+          }}
+        />
+      </MuiPickersUtilsProvider>
+      <FormHelperText error={error}>{error}</FormHelperText>
+    </div>
   )
 }
 
@@ -257,6 +264,57 @@ const ranges = {
 
 const getTimeRangeWhen = type => {
   return ranges[type] || Empty
+}
+
+export const validate = (timeRange = {}) => {
+  const errors = {}
+
+  const { type, value } = timeRange
+
+  switch (type) {
+    case undefined:
+      errors.type = 'Type must supplied'
+      break
+
+    case 'DURING':
+      const { to, from } = timeRange
+      const toDate = getDate(to, null)
+      if (toDate === null) {
+        errors.to = `'To' date must be a valid date`
+      }
+
+      const fromDate = getDate(from, null)
+      if (fromDate === null) {
+        errors.from = `'From' date must be a valid date`
+      }
+
+      if (fromDate && toDate) {
+        if (fromDate >= toDate) {
+          errors.to = `'To' date must be after 'From' date`
+          errors.from = `'From' date must be befor 'To' date`
+        }
+      }
+      break
+
+    case '=':
+      const { last, unit } = timeRange
+      if (isNaN(last) || last < 1) {
+        errors.last = 'Value must be > 0'
+      }
+
+      if (!relativeUnits.includes(unit)) {
+        errors.unit = 'Must include a valid unit'
+      }
+      break
+
+    default:
+      const dateValue = getDate(value, null)
+      if (dateValue === null) {
+        errors.value = `A valid date must be selected`
+      }
+  }
+
+  return { ...errors }
 }
 
 export default TimeRange
