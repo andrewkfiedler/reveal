@@ -18,9 +18,10 @@ import ListItemText from '@material-ui/core/ListItemText'
 import Input from '@material-ui/core/Input'
 import Checkbox from '@material-ui/core/Checkbox'
 import Divider from '@material-ui/core/Divider'
-import TimeRange from './time-range'
-
-import { validate as validateTimeRange } from './time-range'
+import TimeRange, {
+  validate as validateTimeRange,
+  createTimeRange,
+} from './time-range'
 
 import { executeQuery } from './intrigue-api/lib/cache'
 
@@ -260,6 +261,13 @@ const filters = {
   datatypes: MatchTypes,
 }
 
+const defaultFilters = {
+  timeRange: Map({
+    value: createTimeRange({ type: 'BEFORE' }),
+    applyTo: ['created'],
+  }),
+}
+
 export const BasicSearch = props => {
   const [filterTree, setFilterTree] = React.useState(
     Map({ text: '*' })
@@ -295,7 +303,11 @@ export const BasicSearch = props => {
         />
         <AddButton
           addFilter={filter => {
-            setFilterTree(filterTree.merge({ [filter]: undefined }))
+            setFilterTree(
+              filterTree.merge({
+                [filter]: defaultFilters[filter],
+              })
+            )
           }}
         />
       </div>
@@ -388,6 +400,8 @@ const validateMatchTypes = (datatypes = []) => {
 
   return errors
 }
+
+const combineValidators = () => {}
 
 const validate = (filterMap = {}) => {
   let errors = {}
