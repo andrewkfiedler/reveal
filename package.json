@@ -6,7 +6,7 @@
   "devDependencies": {
     "@connexta/ace": "https://github.com/connexta/ace.git#329aa051f483635b566e76cf2704a3431b675195",
     "mocha": "^5.2.0",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.1",
     "rpc-websockets": "4.0.0"
   },
   "dependencies": {
